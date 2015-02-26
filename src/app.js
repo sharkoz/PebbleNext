@@ -7,7 +7,12 @@ var Vibe = require('ui/vibe');
 // Show splash screen while waiting for data
 var splashWindow = new UI.Window();
 
-var resultsMenu = new UI.Menu();
+var resultsMenu = new UI.Menu({
+      sections: [{
+        title: 'Chargement',
+        items: []
+      }]
+    });
 
 // Text element to inform user
 var text = new UI.Text({
@@ -55,16 +60,28 @@ var parseFeed = function(data, quantity) {
 var refresh = function(data){
       // Create an array of Menu items
     var menuItems = parseFeed(data, 10);
- 
-    // Construct Menu to show to user
-    var resultsMenu = new UI.Menu({
+   
+  //resultsMenu.hide();
+    /*/ Construct Menu to show to user
+    var resultsMenu = UI.Menu({
       sections: [{
         title: data.titre,
         items: menuItems
       }]
-    });
+    });*/
+  //resultsMenu.title(0, data.titre);
+    var section = {
+      title: data.titre,
+      items: menuItems
+    };
+  
+    resultsMenu.section(0, section);
+
+    resultsMenu.show();
+    splashWindow.hide();
+    Vibe.vibrate('short');
  
-    // Add an action for SELECT
+    /* Add an action for SELECT
 resultsMenu.on('select', function(e) {
   // Get that forecast
   var forecast = data.list[e.itemIndex];
@@ -86,31 +103,30 @@ resultsMenu.on('select', function(e) {
       });
       detailCard.show();
     });
- 
+ */
     // Show the Menu, hide the splash
-    resultsMenu.show();
-    splashWindow.hide();
-    Vibe.vibrate('short');
-    
+
+    resultsMenu.on('select', function(e) {
+      // Make another request to server      
+      getproche()    
+    });
     // Register for 'tap' events
     resultsMenu.on('accelTap', function(e) {
-      // Make another request to server
-      
-      getproche()
-      
+      // Make another request to server      
+      getproche()      
     });
 };
 
 var getproche = function(){
- 
-splashWindow.show();
+  //resultsMenu.hide();
+  splashWindow.show();
   resultsMenu.hide();
 
 console.log("Splash window showed");
   
   navigator.geolocation.getCurrentPosition(
   function(pos) {
-    var url = "http://rlier.fr/ligne-server/live-proche" +
+    var url = "http://nexttrain.fr/api/live-proche" +
       "/" + pos.coords.latitude +
       "/" + pos.coords.longitude;
     ajax(
